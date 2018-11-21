@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<project name="Maven">
+
+<!-- 
+  Below is introduced because of http://jira.codehaus.org/browse/MNG-3139 
+  Added version 1.0 of maven-default-skin to prod repo on 11/13/08 - PT
+-->	
+
+	<skin>
+    	<groupId>org.apache.maven.skins</groupId>
+    	<artifactId>maven-default-skin</artifactId>
+    	<version>1.0</version>
+	</skin>
+	<bannerRight>
+   		<src>http://groundlink.ground.fedex.com/corpint.nsf/Ground_logo_vert.jpg</src>
+  	</bannerRight>
+  	<body>
+    	<links>
+      		<item name="Mvndev@Ground" href="http://mvndev.ground.fedex.com/"/>
+      		<item name="Maven@Ground" href="http://maven.ground.fedex.com/"/>
+    	</links>
+    	<menu name="Overview">
+      		<item name="Introduction" href="index.html"/> 
+	  		<item name="BuildAutomation" href="buildAutomation.html"/>   
+    	</menu> 
+   </body>
+</project>

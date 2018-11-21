@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:jee="http://www.springframework.org/schema/jee"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans 
+       					   http://www.springframework.org/schema/beans/spring-beans.xsd
+						   http://www.springframework.org/schema/jee
+       					   http://www.springframework.org/schema/jee/spring-jee.xsd">
+
+	<bean class="org.springframework.jms.listener.DefaultMessageListenerContainer" destroy-method="destroy">
+		<property name="connectionFactory">
+			<bean class="com.fedex.smartpost.common.jms.RetryingConnectionFactoryDecorator">
+				<constructor-arg>
+					<jee:jndi-lookup cache="false" jndi-name="PoisonPillCF" />
+				</constructor-arg>
+				<property name="connectionRetryTimeout" value="30000" />
+				<property name="maxConnectionAttempts" value="600" />
+			</bean>
+		</property>
+		<property name="destination">
+			<jee:jndi-lookup cache="false" jndi-name="PoisonPillQ" />
+		</property>
+		<property name="messageListener" ref="messageAdapter" />
+		<property name="concurrentConsumers" value="40" />
+		<property name="receiveTimeout" value="360" />
+		<property name="recoveryInterval" value="60" />
+		<property name="sessionTransacted" value="true" />
+		<property name="errorHandler" ref="passThroughErrorHandler" />
+		<property name="autoStartup" value="true"/>
+	</bean>
+
+	<bean id="messageAdapter" class="com.fedex.smartpost.common.jms.listener.DefaultMessageListenerAdapter">
+		<property name="delegate" ref="poisonPillListener" />
+		<property name="defaultListenerMethod" value="onMessage" />
+	</bean>
+
+	<bean id="poisonPillListener" class="com.fedex.smartpost.system.listeners.PoisonPillListener" />
+
+	<bean id="passThroughErrorHandler" class="com.fedex.smartpost.common.jms.error.PassThroughErrorHandler" />
+</beans>

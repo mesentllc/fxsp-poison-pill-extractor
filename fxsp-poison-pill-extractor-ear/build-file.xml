@@ -1,0 +1,293 @@
+<?xml version="1.0"?>
+<project name="scm-wls-plugin"
+         default="init:maven"
+         basedir="."
+         xmlns:artifact="urn:maven-artifact-ant"
+         xmlns:integration="urn:maven-ant-integration">
+
+	<target name="init:maven">
+		<record name="recorded.log" loglevel="verbose" action="start" />
+	  <copyfile dest="./build-file.xml" src="${ant.file}" />
+		<!-- add our custom task -->
+		<typedef resource="antlib.xml" uri="urn:maven-ant-integration" />
+		<!-- execute our custom task -->
+		<integration:initialize />
+		<!-- use the new path reference -->
+		<condition property="isMaven3" value="true" else="false">
+			<equals arg1="3" arg2="${maven.version.major}" />
+		</condition>
+		<!-- load the optional libraries -->
+		<typedef resource="org/apache/maven/artifact/ant/antlib.xml"
+		         uri="urn:maven-artifact-ant"
+		         reverseloader="${isMaven3}">
+			<classpath>
+				<pathelement path="${maven-ant-tasks.classpath}" />
+			</classpath>
+		</typedef>
+		<taskdef name="wldeploy"
+		         classname="weblogic.ant.taskdefs.management.WLDeploy">
+			<classpath>
+				<pathelement path="${maven-ant-tasks.classpath}" />
+			</classpath>
+		</taskdef>
+	</target>
+
+
+	<!-- -->
+	<target name="listapps">
+		<wldeploy action="listapps"
+		          verbose="${verbose}"
+		          debug="${debug}"
+		          user="${userId}"
+		          password="${password}"
+		          adminurl="${adminServerProtocol}://${adminServerHostName}:${adminServerPort}"
+		          remote="${remote}"
+		          failOnError="${failOnError}" />
+	</target>
+
+
+	<target name="_deployClearNoPlan" unless="usePlan">
+		<wldeploy action="deploy"
+		          verbose="${verbose}"
+		          debug="${debug}"
+		          name="${deployName}"
+		          library="${isLibrary}"
+		          source="${artifactPath}"
+		          user="${userId}"
+		          password="${password}"
+		          adminurl="${adminServerProtocol}://${adminServerHostName}:${adminServerPort}"
+		          upload="${upload}"
+		          remote="${remote}"
+		          failOnError="${failOnError}"
+		          nostage="${nostage}"
+		          externalStage="${external_stage}"
+		          stage="${stage}"
+		          usenonexclusivelock="${usenonexclusivelock}"
+		          targets="${targetNames}" />
+	</target>
+
+	<target name="_deployClearWithPlan" if="usePlan">
+		<wldeploy action="deploy"
+		          verbose="${verbose}"
+		          debug="${debug}"
+		          name="${deployName}"
+		          library="${isLibrary}"
+		          source="${artifactPath}"
+		          user="${userId}"
+		          password="${password}"
+		          adminurl="${adminServerProtocol}://${adminServerHostName}:${adminServerPort}"
+		          upload="${upload}"
+		          remote="${remote}"
+		          failOnError="${failOnError}"
+		          nostage="${nostage}"
+		          externalStage="${external_stage}"
+		          stage="${stage}"
+		          plan="${plan}"
+		          usenonexclusivelock="${usenonexclusivelock}"
+		          targets="${targetNames}" />
+	</target>
+
+	<target name="_deploy" unless="useClearPassword">
+		<antcall target="_deployNoPlan" />
+		<antcall target="_deployWithPlan" />
+	</target>
+
+	<target name="_deployClear" if="useClearPassword">
+		<antcall target="_deployClearNoPlan" />
+		<antcall target="_deployClearWithPlan" />
+	</target>
+
+	<target name="_deployNoPlan" unless="usePlan">
+		<wldeploy action="deploy"
+		          verbose="${verbose}"
+		          debug="${debug}"
+		          name="${deployName}"
+		          library="${isLibrary}"
+		          source="${artifactPath}"
+		          userconfigfile="${userconfigfile}"
+		          userkeyfile="${userkeyfile}"
+		          adminurl="${adminServerProtocol}://${adminServerHostName}:${adminServerPort}"
+		          upload="${upload}"
+		          remote="${remote}"
+		          nostage="${nostage}"
+		          externalStage="${external_stage}"
+		          stage="${stage}"
+		          failOnError="${failOnError}"
+		          usenonexclusivelock="${usenonexclusivelock}"
+		          targets="${targetNames}" />
+	</target>
+
+	<target name="_deployWithPlan" if="usePlan">
+		<wldeploy action="deploy"
+		          verbose="${verbose}"
+		          debug="${debug}"
+		          name="${deployName}"
+		          library="${isLibrary}"
+		          source="${artifactPath}"
+		          userconfigfile="${userconfigfile}"
+		          userkeyfile="${userkeyfile}"
+		          adminurl="${adminServerProtocol}://${adminServerHostName}:${adminServerPort}"
+		          upload="${upload}"
+		          remote="${remote}"
+		          nostage="${nostage}"
+		          externalStage="${external_stage}"
+		          stage="${stage}"
+		          failOnError="${failOnError}"
+		          plan="${plan}"
+		          usenonexclusivelock="${usenonexclusivelock}"
+		          targets="${targetNames}" />
+	</target>
+
+
+	<target name="undeployDeploy" depends="_undeploy,_deploy" />
+
+
+	<target name="_undeployClear" if="useClearPassword">
+		<wldeploy action="undeploy"
+		          verbose="${verbose}"
+		          debug="${debug}"
+		          name="${deployName}"
+		          user="${userId}"
+		          password="${password}"
+		          adminurl="${adminServerProtocol}://${adminServerHostName}:${adminServerPort}"
+		          remote="${remote}"
+		          usenonexclusivelock="${usenonexclusivelock}"
+		          failOnError="${failOnError}" />
+	</target>
+
+
+	<target name="_redeploy" unless="useClearPassword">
+		<wldeploy action="deploy"
+		          verbose="${verbose}"
+		          debug="${debug}"
+		          name="${deployName}"
+		          deltaFiles="${artifactPath}"
+		          source="${artifactPath}"
+		          userconfigfile="${userconfigfile}"
+		          userkeyfile="${userkeyfile}"
+		          adminurl="${adminServerProtocol}://${adminServerHostName}:${adminServerPort}"
+		          upload="${upload}"
+		          remote="${remote}"
+		          failOnError="${failOnError}"
+		          usenonexclusivelock="${usenonexclusivelock}"
+		          targets="${targetNames}" />
+	</target>
+
+
+	<target name="_redeployClear" if="useClearPassword">
+		<wldeploy action="deploy"
+		          verbose="${verbose}"
+		          debug="${debug}"
+		          name="${deployName}"
+		          deltaFiles="${artifactPath}"
+		          source="${artifactPath}"
+		          user="${userId}"
+		          password="${password}"
+		          adminurl="${adminServerProtocol}://${adminServerHostName}:${adminServerPort}"
+		          upload="${upload}"
+		          remote="${remote}"
+		          nostage="${nostage}"
+		          externalStage="${external_stage}"
+		          stage="${stage}"
+		          failOnError="${failOnError}"
+		          usenonexclusivelock="${usenonexclusivelock}"
+		          targets="${targetNames}" />
+	</target>
+
+
+	<target name="_undeploy" unless="useClearPassword">
+		<wldeploy action="undeploy"
+		          verbose="${verbose}"
+		          debug="${debug}"
+		          name="${deployName}"
+		          userconfigfile="${userconfigfile}"
+		          userkeyfile="${userkeyfile}"
+		          adminurl="${adminServerProtocol}://${adminServerHostName}:${adminServerPort}"
+		          remote="${remote}"
+		          usenonexclusivelock="${usenonexclusivelock}"
+		          failOnError="${failOnError}" />
+	</target>
+
+
+	<target name="deploy" depends="init:maven,deploy-property-conditions">
+    <antcall target="_deploy" />
+    <antcall target="_deployClear" />
+  </target>
+		
+
+	<target name="undeploy" depends="init:maven,deploy-property-conditions">
+		<condition property="useClearPassword">
+			<isset property="password" />
+		</condition>
+		<antcall target="_undeploy" />
+		<antcall target="_undeployClear" />
+	</target>
+
+	<target name="redeploy" depends="init:maven,deploy-property-conditions">
+		<antcall target="_redeploy" />
+		<antcall target="_redeployClear" />
+	</target>
+
+	<!-- Sub task for wldeploy argument setup -->
+	<target name="deploy-property-conditions">
+		<condition property="useClearPassword">
+			<isset property="password" />
+		</condition>
+		<condition property="usePlan">
+			<isset property="plan" />
+		</condition>
+		<condition property="stage">
+			<equals arg1="stage" arg2="${stagingMode}" />
+		</condition>
+		<condition property="nostage">
+			<equals arg1="nostage" arg2="${stagingMode}" />
+		</condition>
+		<condition property="exclusive_stage">
+			<equals arg1="exclusive_stage" arg2="${stagingMode}" />
+		</condition>
+		<condition property="isLibrary">
+			<isset property="library" />
+		</condition>
+		<echo>
+   [USE CLEAR PASSWORD = ${useClearPassword}
+	 [USE PLAN           = ${usePlan}
+   [STAGING MODE = ${stagingMode}]
+      : nostage         = ${nostage}
+      : stage           = ${stage}
+      : exclusive_stage = ${exclusive_stage}
+      : plan            = ${plan}
+      : isLibrary       = ${isLibrary}
+        </echo>
+	</target>
+
+	<taskdef name="wljwsc" classname="weblogic.wsee.tools.anttasks.JwscTask" />
+	<target name="jwsc">
+
+
+		<!-- At this time I am having difficulty passing in a classpath to this task
+        So for now, I'm putting this on the bb
+        - PT Feb 2009
+      -->
+
+		<wljwsc applicationXml="${applicationXml}"
+		        destdir="${destdir}"
+		        destEncoding="${destEncoding}"
+		        dotNetStyle="${dotNetStyle}"
+		        enableAsyncService="${enableAsyncService}"
+		        jaxRpcByteArrayStyle="${jaxRpcByteArrayStyle}"
+		        keepGenerated="${keepGenerated}"
+		        sourcepath="${sourcepath}"
+		        srcdir="${srcdir}"
+		        srcEncoding="${srcEncoding}"
+		        classpath="${classpath}"
+		        debug="${debug}"
+		        verbose="${verbose}"
+		        deprecation="${deprecation}"
+		        fork="${fork}">
+			<jws file="${jwsFile}" explode="${explode}" />
+		</wljwsc>
+
+
+	</target>
+
+</project>

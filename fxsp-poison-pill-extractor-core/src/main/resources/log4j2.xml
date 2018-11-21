@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<Configuration packages="com.fedex.framework.logging.log4j2">
+	<Properties>
+		<Property name="VARLOG" />
+	</Properties>
+
+	<Appenders>
+		<RollingFile name="rootLogAppender" fileName="${sys:VARLOG}${root.log.location}" filePattern="${sys:VARLOG}${root.log.location}.%i">
+			<FedExPatternLayout />
+			<Policies>
+				<SizeBasedTriggeringPolicy size="5 MB" />
+			</Policies>
+			<DefaultRolloverStrategy max="15" />
+		</RollingFile>
+	</Appenders>
+
+	<Loggers>
+		<Root level="${default.root.log.level}">
+			<AppenderRef ref="rootLogAppender"/>
+		</Root>
+	</Loggers>
+</Configuration>
